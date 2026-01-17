@@ -3,7 +3,7 @@ import { Button } from "@/app/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
 import { Separator } from "@/app/components/ui/separator";
-import { Sparkles, AlertCircle, Lightbulb, TrendingUp, FileText, Info } from "lucide-react";
+import { Sparkles, AlertCircle, Lightbulb, FileText } from "lucide-react";
 
 interface NCRData {
   partType: string;
@@ -29,8 +29,6 @@ interface NCRData {
 interface PredictionResult {
   rootCauses: Array<{ cause: string; confidence: number; category: string }>;
   suggestedFixes: Array<{ fix: string; confidence: number }>;
-  preventiveMeasures: string[];
-  impactAssessment: string;
 }
 
 interface AIPredictionProps {
@@ -86,14 +84,6 @@ export function AIPrediction({ ncrData }: AIPredictionProps) {
           confidence: 79,
         },
       ],
-      preventiveMeasures: [
-        "Schedule preventive maintenance every 2 weeks instead of monthly",
-        "Create visual work instructions at the workstation",
-        "Implement statistical process control (SPC) charts for this operation",
-        "Add secondary verification step for critical dimensions",
-      ],
-      impactAssessment:
-        "Based on historical data, this type of non-conformance typically affects 2-5% of production runs. Implementing the suggested fixes could reduce occurrence rate by 85% and save approximately $15,000-$25,000 annually in scrap costs.",
     };
 
     setPrediction(mockPrediction);
@@ -353,42 +343,6 @@ export function AIPrediction({ ncrData }: AIPredictionProps) {
                   </div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
-
-          {/* Preventive Measures */}
-          <Card className="border-l-4 border-l-purple-500">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-purple-500" />
-                <CardTitle>Preventive Measures</CardTitle>
-              </div>
-              <CardDescription>Long-term actions to prevent recurrence</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ul className="space-y-2">
-                {prediction.preventiveMeasures.map((measure, index) => (
-                  <li key={index} className="flex items-start gap-3 rounded-lg bg-purple-50 p-3">
-                    <div className="mt-0.5 h-2 w-2 rounded-full bg-purple-500" />
-                    <span className="flex-1">{measure}</span>
-                  </li>
-                ))}
-              </ul>
-            </CardContent>
-          </Card>
-
-          {/* Impact Assessment */}
-          <Card className="border-l-4 border-l-blue-500">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Info className="h-5 w-5 text-blue-500" />
-                <CardTitle>Impact Assessment</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 p-4">
-                <p className="text-slate-700">{prediction.impactAssessment}</p>
-              </div>
             </CardContent>
           </Card>
         </>
