@@ -1,12 +1,40 @@
 import { NCRForm } from "@/app/components/NCRForm";
 import { AIPrediction } from "@/app/components/AIPrediction";
 import { Toaster } from "@/app/components/ui/sonner";
-import { ClipboardList, Sparkles } from "lucide-react";
+import { ClipboardList, FileText } from "lucide-react";
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/app/components/ui/tabs";
 
+interface NCRData {
+  partType: string;
+  jobOrder: string;
+  operationNumberDetection: string;
+  ncDescription: string;
+  ncCode: string;
+  nominal: string;
+  lowerTolerance: string;
+  upperTolerance: string;
+  measuredValue: string;
+  defectDescEN: string;
+  qcCommentsEN: string;
+  machineNumDetection: string;
+  operatorDetection: string;
+  dateDetection: string;
+  operationNumberOccurrence: string;
+  operatorMachining: string;
+  machineNumOccurrence: string;
+  dateMachining: string;
+}
+
+// NCR Application with AI Analysis
 export default function App() {
   const [activeTab, setActiveTab] = useState("form");
+  const [submittedData, setSubmittedData] = useState<NCRData | null>(null);
+
+  const handleNCRSubmit = (data: NCRData) => {
+    setSubmittedData(data);
+    setActiveTab("management");
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-100">
@@ -35,18 +63,18 @@ export default function App() {
               <ClipboardList className="h-4 w-4" />
               Submit NCR
             </TabsTrigger>
-            <TabsTrigger value="ai" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
-              <Sparkles className="h-4 w-4" />
-              AI Prediction
+            <TabsTrigger value="management" className="flex items-center gap-2 data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+              <FileText className="h-4 w-4" />
+              NCR Management
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="form" className="space-y-6">
-            <NCRForm />
+            <NCRForm onSubmit={handleNCRSubmit} />
           </TabsContent>
 
-          <TabsContent value="ai" className="space-y-6">
-            <AIPrediction />
+          <TabsContent value="management" className="space-y-6">
+            <AIPrediction ncrData={submittedData} />
           </TabsContent>
         </Tabs>
       </div>

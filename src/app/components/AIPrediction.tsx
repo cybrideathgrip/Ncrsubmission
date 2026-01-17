@@ -1,38 +1,53 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/app/components/ui/button";
-import { Input } from "@/app/components/ui/input";
-import { Label } from "@/app/components/ui/label";
-import { Textarea } from "@/app/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/app/components/ui/card";
 import { Badge } from "@/app/components/ui/badge";
-import { Sparkles, AlertCircle, Lightbulb, TrendingUp } from "lucide-react";
-import { toast } from "sonner";
+import { Separator } from "@/app/components/ui/separator";
+import { Sparkles, AlertCircle, Lightbulb, TrendingUp, FileText, Info } from "lucide-react";
+
+interface NCRData {
+  partType: string;
+  jobOrder: string;
+  operationNumberDetection: string;
+  ncDescription: string;
+  ncCode: string;
+  nominal: string;
+  lowerTolerance: string;
+  upperTolerance: string;
+  measuredValue: string;
+  defectDescEN: string;
+  qcCommentsEN: string;
+  machineNumDetection: string;
+  operatorDetection: string;
+  dateDetection: string;
+  operationNumberOccurrence: string;
+  operatorMachining: string;
+  machineNumOccurrence: string;
+  dateMachining: string;
+}
 
 interface PredictionResult {
   rootCauses: Array<{ cause: string; confidence: number; category: string }>;
-  suggestedFixes: Array<{ fix: string; priority: string; cost: string }>;
+  suggestedFixes: Array<{ fix: string; confidence: number }>;
   preventiveMeasures: string[];
   impactAssessment: string;
 }
 
-export function AIPrediction() {
+interface AIPredictionProps {
+  ncrData: NCRData | null;
+}
+
+export function AIPrediction({ ncrData }: AIPredictionProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [prediction, setPrediction] = useState<PredictionResult | null>(null);
-  const [formData, setFormData] = useState({
-    partType: "",
-    ncCode: "",
-    ncDescription: "",
-    measuredValue: "",
-    nominal: "",
-    defectDescription: "",
-  });
+
+  useEffect(() => {
+    if (ncrData) {
+      handleAnalyze();
+    }
+  }, [ncrData]);
 
   const handleAnalyze = async () => {
-    if (!formData.ncDescription || !formData.partType) {
-      toast.error("Please fill in at least Part Type and NC Description");
-      return;
-    }
-
     setIsAnalyzing(true);
 
     // Simulate AI analysis
@@ -42,41 +57,33 @@ export function AIPrediction() {
     const mockPrediction: PredictionResult = {
       rootCauses: [
         {
-          cause: "Machine calibration drift detected in temperature control system",
+          cause: "Tool Calibration",
           confidence: 92,
           category: "Equipment",
         },
         {
-          cause: "Operator training gap in measurement procedure verification",
+          cause: "Process Instability",
           confidence: 78,
-          category: "Human Factor",
+          category: "Process",
         },
         {
-          cause: "Material batch variation exceeding specification limits",
+          cause: "Human Error",
           confidence: 65,
-          category: "Material",
+          category: "Human Factor",
         },
       ],
       suggestedFixes: [
         {
-          fix: "Perform immediate machine recalibration and establish weekly verification schedule",
-          priority: "High",
-          cost: "Medium",
+          fix: "Cancel releasing clamping force",
+          confidence: 88,
         },
         {
-          fix: "Conduct refresher training session on measurement protocols for all operators",
-          priority: "High",
-          cost: "Low",
+          fix: "Add manual tool calibration",
+          confidence: 85,
         },
         {
-          fix: "Implement incoming material inspection with tighter acceptance criteria",
-          priority: "Medium",
-          cost: "Medium",
-        },
-        {
-          fix: "Install automated monitoring system for temperature fluctuations",
-          priority: "Medium",
-          cost: "High",
+          fix: "Maintenance marking machine",
+          confidence: 79,
         },
       ],
       preventiveMeasures: [
@@ -91,11 +98,6 @@ export function AIPrediction() {
 
     setPrediction(mockPrediction);
     setIsAnalyzing(false);
-    toast.success("AI analysis complete!");
-  };
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const getPriorityColor = (priority: string) => {
@@ -124,107 +126,173 @@ export function AIPrediction() {
     }
   };
 
+  if (!ncrData) {
+    return (
+      <Card className="border-2 border-dashed">
+        <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+          <FileText className="mb-4 h-12 w-12 text-slate-300" />
+          <h3 className="mb-2 text-lg">No NCR Data Available</h3>
+          <p className="text-slate-500">
+            Please submit an NCR report from the "Submit NCR" tab to view the management report and AI analysis
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* Input Section */}
+      {/* Submitted NCR Report Section */}
       <Card className="border-l-4 border-l-blue-600">
         <CardHeader>
-          <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-blue-600" />
-            <CardTitle>AI Analysis Input</CardTitle>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-blue-600" />
+              <CardTitle>Submitted NCR Report</CardTitle>
+            </div>
+            <Button onClick={handleAnalyze} disabled={isAnalyzing} size="sm" className="bg-blue-600 hover:bg-blue-700">
+              {isAnalyzing ? (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4 animate-spin" />
+                  Analyzing...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Re-analyze
+                </>
+              )}
+            </Button>
           </div>
-          <CardDescription>
-            Enter non-conformance details for AI-powered root cause analysis
-          </CardDescription>
+          <CardDescription>Review of submitted non-conformance data</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="partType">Part Type</Label>
-              <Input
-                id="partType"
-                value={formData.partType}
-                onChange={(e) => handleInputChange("partType", e.target.value)}
-                placeholder="e.g., Gear Housing"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="ncCode">NC Code</Label>
-              <Input
-                id="ncCode"
-                value={formData.ncCode}
-                onChange={(e) => handleInputChange("ncCode", e.target.value)}
-                placeholder="e.g., DIM-001"
-              />
+        <CardContent className="space-y-6">
+          {/* Part Information */}
+          <div className="rounded-lg bg-blue-50 p-4">
+            <h4 className="mb-3 font-semibold text-blue-900">Part Information</h4>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="text-sm text-slate-600">Part Type</p>
+                <p className="font-medium">{ncrData.partType}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Job Order</p>
+                <p className="font-medium">{ncrData.jobOrder}</p>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="ncDescription">NC Description</Label>
-            <Textarea
-              id="ncDescription"
-              value={formData.ncDescription}
-              onChange={(e) => handleInputChange("ncDescription", e.target.value)}
-              placeholder="Describe the non-conformance in detail..."
-              rows={3}
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="space-y-2">
-              <Label htmlFor="nominal">Nominal Value</Label>
-              <Input
-                id="nominal"
-                type="number"
-                step="any"
-                value={formData.nominal}
-                onChange={(e) => handleInputChange("nominal", e.target.value)}
-                placeholder="e.g., 25.00"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="measuredValue">Measured Value</Label>
-              <Input
-                id="measuredValue"
-                type="number"
-                step="any"
-                value={formData.measuredValue}
-                onChange={(e) => handleInputChange("measuredValue", e.target.value)}
-                placeholder="e.g., 25.15"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="defectDescription">Defect Type</Label>
-              <Input
-                id="defectDescription"
-                value={formData.defectDescription}
-                onChange={(e) => handleInputChange("defectDescription", e.target.value)}
-                placeholder="e.g., Over-size"
-              />
+          {/* Non-Conformance Details */}
+          <div className="rounded-lg bg-orange-50 p-4">
+            <h4 className="mb-3 font-semibold text-orange-900">Non-Conformance Details</h4>
+            <div className="space-y-3">
+              <div>
+                <p className="text-sm text-slate-600">NC Description</p>
+                <p className="font-medium">{ncrData.ncDescription}</p>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div>
+                  <p className="text-sm text-slate-600">NC Code</p>
+                  <p className="font-medium">{ncrData.ncCode}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Defect Description</p>
+                  <p className="font-medium">{ncrData.defectDescEN}</p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">QC Comments</p>
+                <p className="font-medium">{ncrData.qcCommentsEN}</p>
+              </div>
             </div>
           </div>
 
-          <Button onClick={handleAnalyze} disabled={isAnalyzing} className="w-full bg-blue-600 hover:bg-blue-700">
-            {isAnalyzing ? (
-              <>
-                <Sparkles className="mr-2 h-4 w-4 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 h-4 w-4" />
-                Analyze with AI
-              </>
-            )}
-          </Button>
+          {/* Measurements */}
+          <div className="rounded-lg bg-purple-50 p-4">
+            <h4 className="mb-3 font-semibold text-purple-900">Measurements</h4>
+            <div className="grid gap-3 sm:grid-cols-4">
+              <div>
+                <p className="text-sm text-slate-600">Nominal</p>
+                <p className="font-medium">{ncrData.nominal}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Lower Tolerance</p>
+                <p className="font-medium">{ncrData.lowerTolerance}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Upper Tolerance</p>
+                <p className="font-medium">{ncrData.upperTolerance}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Measured Value</p>
+                <p className="font-medium">{ncrData.measuredValue}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Detection Information */}
+          <div className="rounded-lg bg-green-50 p-4">
+            <h4 className="mb-3 font-semibold text-green-900">Detection Information</h4>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="text-sm text-slate-600">Operation Number</p>
+                <p className="font-medium">{ncrData.operationNumberDetection}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Machine Number</p>
+                <p className="font-medium">{ncrData.machineNumDetection}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Operator</p>
+                <p className="font-medium">{ncrData.operatorDetection}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Date of Detection</p>
+                <p className="font-medium">{new Date(ncrData.dateDetection).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Occurrence Information */}
+          <div className="rounded-lg bg-indigo-50 p-4">
+            <h4 className="mb-3 font-semibold text-indigo-900">Occurrence Information</h4>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <p className="text-sm text-slate-600">Operation Number</p>
+                <p className="font-medium">{ncrData.operationNumberOccurrence}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Machine Number</p>
+                <p className="font-medium">{ncrData.machineNumOccurrence}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Operator</p>
+                <p className="font-medium">{ncrData.operatorMachining}</p>
+              </div>
+              <div>
+                <p className="text-sm text-slate-600">Date of Machining</p>
+                <p className="font-medium">{new Date(ncrData.dateMachining).toLocaleDateString()}</p>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
+      <Separator />
+
+      {/* AI Analysis Section */}
+      {isAnalyzing && (
+        <Card className="border-l-4 border-l-blue-600">
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <Sparkles className="mb-4 h-12 w-12 animate-spin text-blue-600" />
+            <h3 className="mb-2 text-lg">AI Analysis in Progress</h3>
+            <p className="text-slate-500">Analyzing NCR data to identify root causes and suggest corrective actions...</p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Results Section */}
-      {prediction && (
+      {prediction && !isAnalyzing && (
         <>
           {/* Root Causes */}
           <Card className="border-l-4 border-l-red-500">
@@ -274,9 +342,14 @@ export function AIPrediction() {
                     </div>
                     <p className="flex-1">{item.fix}</p>
                   </div>
-                  <div className="flex gap-2">
-                    <Badge className={getPriorityColor(item.priority)}>Priority: {item.priority}</Badge>
-                    <Badge className={getCostColor(item.cost)}>Cost: {item.cost}</Badge>
+                  <div className="mb-3 flex items-center gap-2">
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-gray-200">
+                      <div
+                        className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
+                        style={{ width: `${item.confidence}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium">{item.confidence}%</span>
                   </div>
                 </div>
               ))}
@@ -307,7 +380,10 @@ export function AIPrediction() {
           {/* Impact Assessment */}
           <Card className="border-l-4 border-l-blue-500">
             <CardHeader>
-              <CardTitle>Impact Assessment</CardTitle>
+              <div className="flex items-center gap-2">
+                <Info className="h-5 w-5 text-blue-500" />
+                <CardTitle>Impact Assessment</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="rounded-lg bg-gradient-to-r from-blue-50 to-cyan-50 p-4">
@@ -316,17 +392,6 @@ export function AIPrediction() {
             </CardContent>
           </Card>
         </>
-      )}
-
-      {!prediction && (
-        <Card className="border-2 border-dashed">
-          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-            <Sparkles className="mb-4 h-12 w-12 text-slate-300" />
-            <p className="text-slate-500">
-              Enter non-conformance details above and click "Analyze with AI" to get predictions
-            </p>
-          </CardContent>
-        </Card>
       )}
     </div>
   );

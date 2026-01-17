@@ -1,7 +1,7 @@
 
-  # NCR Report Submission Form
+  # Safran Sentinel
 
-  This is a code bundle for NCR Report Submission Form. The original project is available at https://www.figma.com/design/DzT1MIpAx9ntuYQWLTrcIq/NCR-Report-Submission-Form.
+  This is a code bundle for Safran Sentinel. The original project is available at https://www.figma.com/design/DzT1MIpAx9ntuYQWLTrcIq/Safran-Sentinel.
 
   ## Running the code
 

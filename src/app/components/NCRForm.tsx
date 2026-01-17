@@ -26,11 +26,13 @@ interface NCRFormData {
   operatorMachining: string;
   machineNumOccurrence: string;
   dateMachining: string;
-  rootCause: string;
-  correctiveActions: string;
 }
 
-export function NCRForm() {
+interface NCRFormProps {
+  onSubmit: (data: NCRFormData) => void;
+}
+
+export function NCRForm({ onSubmit: onSubmitProp }: NCRFormProps) {
   const {
     register,
     handleSubmit,
@@ -43,6 +45,7 @@ export function NCRForm() {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     console.log("NCR Report Data:", data);
     toast.success("NCR Report submitted successfully!");
+    onSubmitProp(data);
     reset();
   };
 
@@ -356,45 +359,6 @@ export function NCRForm() {
             />
             {errors.dateMachining && (
               <p className="text-sm text-red-500">{errors.dateMachining.message}</p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Root Cause and Corrective Actions Section */}
-      <Card className="border-l-4 border-l-red-500">
-        <CardHeader className="bg-gradient-to-r from-red-50 to-rose-50">
-          <CardTitle className="text-red-900">Root Cause Analysis</CardTitle>
-          <CardDescription>Identify root cause and define corrective actions</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="rootCause">
-              Root Cause of Occurrence <span className="text-red-500">*</span>
-            </Label>
-            <Textarea
-              id="rootCause"
-              {...register("rootCause", { required: "Root cause is required" })}
-              placeholder="Describe the root cause"
-              rows={4}
-            />
-            {errors.rootCause && (
-              <p className="text-sm text-red-500">{errors.rootCause.message}</p>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="correctiveActions">
-              Corrective Actions <span className="text-red-500">*</span>
-            </Label>
-            <Textarea
-              id="correctiveActions"
-              {...register("correctiveActions", { required: "Corrective actions are required" })}
-              placeholder="Describe the corrective actions"
-              rows={4}
-            />
-            {errors.correctiveActions && (
-              <p className="text-sm text-red-500">{errors.correctiveActions.message}</p>
             )}
           </div>
         </CardContent>
